@@ -1,3 +1,6 @@
+test.py
+.vscode/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -134,6 +137,7 @@ venv.bak/
 
 # Rope project settings
 .ropeproject
+
 
 # mkdocs documentation
 /site
