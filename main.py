@@ -1,38 +1,9 @@
 import cv2
 import numpy as np
-import math
+import matplotlib.pyplot as plt
 
-# 計算T值
-def T_caulate(img_gr) -> float:
-    img_size = np.shape(img_gr)
-    img_average_value = np.sum(img_gr, axis=(0, 1))/(img_size[0]*img_size[1])
-    return img_average_value
-
-# 二值化矩陣
-def binarization(img, max=255, C=0):
-    img_size = np.shape(img)
-    T = T_caulate(img)
-    for i in range(img_size[0]):
-        for j in range(img_size[1]):
-            if img[i][j] > (T-C):
-                img[i][j] = max
-            elif img[i][j] <= (T-C):
-                img[i][j] = 0
-    return img
-
-
-# 使用Adaptive Threshold 二值化矩陣
-def adaptive_threshold(img, max=255, block_size=20, C=0):
-    img_size = np.shape(img)
-    for i in range(img_size[0]//block_size):
-        for j in range(img_size[1]//block_size):
-            temp_block = np.ones((block_size, block_size))
-            temp_block = img[(i)*block_size:(i+1)*block_size,
-                             (j)*block_size:(j+1)*block_size]
-            temp_block = binarization(temp_block, max, C)
-            img[(i)*block_size:(i+1)*block_size,(j)*block_size:(j+1)*block_size] = temp_block
-
-    return img
+from binarization import sauvola_threshold
+from label import sequential_labeling
 
 # 侵蝕
 def dilate(img, max = 255):
@@ -45,63 +16,70 @@ def dilate(img, max = 255):
 
     return img_delate
 
-# 計算Sauvola閾值
-def sauvola_threshold(img, block_size=20, R=0.5):
-    img_size = np.shape(img)
-    threshold_img = np.zeros_like(img, dtype=np.uint8)
+def boundary(img):
+    s = np.argwhere(img == 0)[0]
+    s = tuple(s)
+    # 設定當前像素 c 和 4-鄰居 b
+    c = s
+    b = tuple[s[0], s[1] - 1]
 
-    for i in range(0, img_size[0], block_size):
-        for j in range(0, img_size[1], block_size):
-            # 提取區域
-            block = img[i:i+block_size, j:j+block_size]
-            
-            # 計算平均值和標準差
-            mean = np.mean(block)
-            std_dev = np.std(block)
-            
-            # 計算Sauvola閾值
-            threshold = mean * (1 + R * ((std_dev / 128) - 1))
-            
-            # 根據閾值進行二值化
-            threshold_img[i:i+block_size, j:j+block_size] = (block > threshold) * 255
+    # 定義8-鄰居的順序
+    neighbors_order = [(0, -1), (-1, -1), (-1, 0), (-1, 1),
+                       (0, 1), (1, 1), (1, 0), (1, -1)]
 
-    return threshold_img
+    boundary_pixels = []  # 存儲邊界像素的座標
 
-# 使用Sauvola Threshold 二值化矩陣
-def sauvola(img, block_size=20, R=0.5):
-    img_size = np.shape(img)
-    threshold_img = np.zeros_like(img, dtype=np.uint8)
+    while True:
+        # 找到 8-鄰居中第一個屬於 S 的像素
+        for i, (dx, dy) in enumerate(neighbors_order):
+            ni = (c[0] + dx, c[1] + dy)
+            if 0 <= ni[0] < img.shape[0] and 0 <= ni[1] < img.shape[1] and img[ni] == 0:
+                break
 
-    for i in range(0, img_size[0], block_size):
-        for j in range(0, img_size[1], block_size):
-            # 提取區域
-            block = img[i:i+block_size, j:j+block_size]
-            
-            # 使用Sauvola閾值
-            threshold = sauvola_threshold(block, R=R)
-            
-            # 將二值化結果應用到原圖
-            threshold_img[i:i+block_size, j:j+block_size] = threshold
+        # 設置 c 和 b
+        c = ni
+        # b = [sum(x) for x in zip(ni, neighbors_order[(i - 1) % 8])]
+        b = tuple((ni[0], ni[1] - 1))    
+        neighbors_order = neighbors_order[i-1:] + neighbors_order[:i-1]
 
-    return threshold_img
+        # 將當前像素座標加入結果列表
+        boundary_pixels.append(c)
+
+        # 當 c 等於 s 時結束迴圈
+        if c == s:
+            break
+
+    return boundary_pixels
 
     
 if __name__ == '__main__':
 
     img = cv2.imread("sample/test1.bmp", cv2.IMREAD_GRAYSCALE)
-    img_bin = adaptive_threshold(img.copy(), 255, 20, 10) # 二值化圖片
-    img_sauvola = sauvola(img.copy(), 20, 0.5)
-    # img = cv2.imread("sample/test2.bmp", cv2.IMREAD_GRAYSCALE)
+    img_sauvola = sauvola_threshold(img.copy(), max = 1, block_size = 30, R = 0.2) # 二值化矩陣
+
+
+    # # 偵測邊界
+    # boundary_pixel = boundary(img_sauvola.copy()) 
+    # result_image = cv2.cvtColor(img.copy(), cv2.COLOR_GRAY2BGR)
+    # for pixel in boundary_pixel:
+    #     result_image[pixel] = [0, 0, 255]  # 在 BGR 圖像中，紅色表示邊界
+    # cv2.imshow('Boundary Image', result_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    # label
+    img_label = sequential_labeling(img_sauvola.copy())
+    plt.imshow(img_label, cmap='gray', vmin=0, vmax=500)
+    plt.title('label')
+    plt.show()    
+
+    # plt.imshow(img_sauvola, cmap='gray', vmin=0, vmax=1)
+    # plt.title('sauvola')
+    # plt.show()
 
     # NOTE 功能:侵蝕然後膨脹，但重要性未知，先使用內建函數跳過
-    # print(img_bin[10])
-    kernel = np.ones((2, 2), np.uint8)
-    # dilation = dilate(img_bin)
-    cv2.imshow('bin', img_bin)
-    cv2.imshow("sauvola",img_sauvola)
-    # cv2.imshow("diff", img_bin-img_sauvola)
-    dilation = cv2.dilate(img_sauvola, kernel, iterations=1)  # 侵蝕
-    erosion = cv2.erode(dilation, kernel, iterations=1)  # 膨脹
-    cv2.imshow('erosion', erosion)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
+    # kernel = np.ones((2, 2), np.uint8)
+    # dilation = cv2.dilate(img_sauvola, kernel, iterations=1)  # 侵蝕
+    # erosion = cv2.erode(dilation, kernel, iterations=1)  # 膨脹
+    # cv2.imshow('erosion', erosion)
+

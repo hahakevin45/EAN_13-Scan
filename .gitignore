@@ -1,4 +1,4 @@
-test.py
+test*.py
 .vscode/
 
 # Byte-compiled / optimized / DLL files
