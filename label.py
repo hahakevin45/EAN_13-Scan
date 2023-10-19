@@ -1,5 +1,8 @@
 import numpy as np
+from numba import njit 
 
+
+@njit
 def sequential_labeling(img):
     def find_lowest_label(equivalence, label):
         while equivalence[label] != label:
@@ -14,7 +17,7 @@ def sequential_labeling(img):
             equivalent_labels[root1] = root2
 
     img_size = np.shape(img)
-    labels = np.zeros_like(img, dtype=int)
+    labels = np.zeros(img_size, dtype = np.int64)
     equivalence = list(range(img_size[0] * img_size[1]))
 
     current_label = 1

@@ -8,7 +8,7 @@ from label import sequential_labeling
 
 
 # 侵蝕
-def dilate(img, max = 255):
+def dilate(img, max = 1):
     img_size = np.shape(img)
     img_delate = np.ones(img_size)
     for i in range (0,img_size[0]-1):
@@ -75,6 +75,7 @@ if __name__ == '__main__':
     img_label = sequential_labeling(img_sauvola.copy())
     end_time = time.time()
     print(f"Average Time: {end_time-start_time}s.")
+    
     plt.imshow(img_label, cmap='gray', vmin=0, vmax=500)
     plt.title('label')
     plt.show()    

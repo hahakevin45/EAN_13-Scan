@@ -2,14 +2,14 @@ import numpy as np
 
 
 # 二值化矩陣
-def binarization(img, max=255, C=0):
+def binarization(img, max=1, C=0):
     T = np.mean(img) # 設 T 為平均值
     img = np.where(img > (T - C), max, 0)
     return img
 
 
 # 使用Adaptive Threshold 二值化矩陣
-def adaptive_threshold(img, max=255, block_size=20, C=0):
+def adaptive_threshold(img, max=1, block_size=20, C=0):
     img_size = np.shape(img)
     for i in range(img_size[0]//block_size):
         for j in range(img_size[1]//block_size):           
@@ -19,7 +19,7 @@ def adaptive_threshold(img, max=255, block_size=20, C=0):
     return img
 
 # 計算Sauvola閾值
-def sauvola_threshold(img, max = 255, block_size=30, R=0.5):
+def sauvola_threshold(img, max = 1, block_size=30, R=0.5):
     img_size = np.shape(img)
     threshold_img = np.zeros_like(img, dtype=np.uint8)
 
