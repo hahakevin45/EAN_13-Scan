@@ -1,31 +1,11 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 from binarization import sauvola_threshold
 from label import sequential_labeling
 
-# 計算Sauvola閾值
-def sauvola_threshold(img, block_size=20, R=0.5):
-    img_size = np.shape(img)
-    threshold_img = np.zeros_like(img, dtype=np.uint8)
-
-    for i in range(0, img_size[0], block_size):
-        for j in range(0, img_size[1], block_size):
-            # 提取區域
-            block = img[i:i+block_size, j:j+block_size]
-            
-            # 計算平均值和標準差
-            mean = np.mean(block)
-            std_dev = np.std(block)
-            
-            # 計算Sauvola閾值
-            threshold = mean * (1 + R * ((std_dev / 128) - 1))
-            
-            # 根據閾值進行二值化
-            threshold_img[i:i+block_size, j:j+block_size] = (block > threshold) * 255
-
-    return threshold_img
 
 # 侵蝕
 def dilate(img, max = 255):
@@ -76,8 +56,10 @@ def boundary(img):
     
 if __name__ == '__main__':
 
+    start_time = time.time()
+
     img = cv2.imread("sample/test1.bmp", cv2.IMREAD_GRAYSCALE)
-    img_sauvola = sauvola_threshold(img.copy(), block_size = 30, R = 0.2) # 二值化矩陣
+    img_sauvola = sauvola_threshold(img.copy(), max =1, block_size = 30, R = 0.2) # 二值化矩陣
 
 
     # # 偵測邊界
@@ -91,6 +73,8 @@ if __name__ == '__main__':
 
     # label
     img_label = sequential_labeling(img_sauvola.copy())
+    end_time = time.time()
+    print(f"Average Time: {end_time-start_time}s.")
     plt.imshow(img_label, cmap='gray', vmin=0, vmax=500)
     plt.title('label')
     plt.show()    
