@@ -36,6 +36,6 @@ def sauvola_threshold(img, max = 1, block_size=30, R=0.5):
             threshold = mean * (1 + R * ((std_dev / 128) - 1))
             
             # 根據閾值進行二值化
-            threshold_img[i:i+block_size, j:j+block_size] = (block > threshold) * max
+            threshold_img[i:i+block_size, j:j+block_size] = (block < threshold) * max
 
     return threshold_img

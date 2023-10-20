@@ -1,8 +1,8 @@
 import numpy as np
-from numba import njit 
+# from numba import njit 
 
 
-@njit
+# @njit
 def sequential_labeling(img):
     def find_lowest_label(equivalence, label):
         while equivalence[label] != label:
@@ -48,14 +48,13 @@ def sequential_labeling(img):
             if img[i, j] == 1:
                 labels[i, j] = find_lowest_label(equivalence, labels[i, j])
                 
-    # 使用 set 獲取唯一標籤的數量
-    unique_labels = set(labels.flatten())
+    # # 使用 set 獲取唯一標籤的數量
+    # unique_labels = set(labels.flatten())
 
-    # 不包括背景標籤 0
-    region_count = len(unique_labels) - 1
-
-    print("區域數量:", region_count)    
-
+    # # 不包括背景標籤 0
+    # region_count = len(unique_labels) - 1
+    # print("區域數量:", region_count)
+        
     return labels
 
 if __name__ == "__main__":
