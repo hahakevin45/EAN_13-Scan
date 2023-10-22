@@ -1,8 +1,8 @@
 import numpy as np
-# from numba import njit 
+from numba import njit 
 
 
-# @njit
+@njit
 def sequential_labeling(img):
     def find_lowest_label(equivalence, label):
         while equivalence[label] != label:

@@ -13,9 +13,9 @@ def adaptive_threshold(img, max=1, block_size=20, C=0):
     img_size = np.shape(img)
     for i in range(img_size[0]//block_size):
         for j in range(img_size[1]//block_size):           
-            temp_block = img[(i)*block_size:(i+1)*block_size,(j)*block_size:(j+1)*block_size]
-            temp_block = binarization(temp_block, max, C)
-            img[(i)*block_size:(i+1)*block_size,(j)*block_size:(j+1)*block_size] = temp_block
+            temp_block = img[(i)*block_size:(i+1)*block_size, (j)*block_size:(j+1)*block_size] # 提取 block size 大小的範圍
+            temp_block = binarization(temp_block, max, C) # block size 範圍內二值化
+            img[(i)*block_size:(i+1)*block_size, (j)*block_size:(j+1)*block_size] = temp_block
     return img
 
 # 計算Sauvola閾值
