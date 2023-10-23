@@ -40,19 +40,7 @@ if __name__ == '__main__':
     print("區域數量:", len(unique_labels))
 
     # img_in_filter = boundary(img_area_filter)
-    for label in unique_labels:
-        label_phase = dict(label, isoperimetric_inequality(img_area_filter, label))
-
-    for label in unique_labels:
-        if label_phase < 10000:
-            img_isoperimetric_inequality_filter = np.where(img_area_filter == label, 0, img_area_filter)
-
-    unique_labels = set(img_isoperimetric_inequality_filter.flatten())
-    unique_labels.remove(0)
-    print("\n After isoperimetric inquality filter: \n")
-    print(unique_labels)
-    print("區域數量:", len(unique_labels))
-   
+       
 
     # 計算程式運行時間
     end_time = time.time()
@@ -61,7 +49,7 @@ if __name__ == '__main__':
     # show image
     plt.figure(figsize=(15, 15))
     plt.subplot(122)
-    plt.imshow(img_isoperimetric_inequality_filter, cmap='gray', vmin=0, vmax=1)
+    plt.imshow(img_area_filter, cmap='gray', vmin=0, vmax=1)
     plt.title('Isoperimetric Inequality')
 
     # show image

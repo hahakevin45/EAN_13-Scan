@@ -20,8 +20,3 @@ def isoperimetric_inequality(img, label):
     perimeter = len(boundary(img))
     area = np.sum(img) / label 
     return perimeter*perimeter/area
-
-class Label:
-    def __init__(self, value) -> None:
-        self.value = value
-        pass

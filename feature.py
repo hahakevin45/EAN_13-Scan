@@ -43,3 +43,21 @@ def boundary(img) -> list:
             break
 
     return boundary_pixels
+
+
+class Label:
+    def __init__(self, value, img) -> None:
+        self.value = value
+        self.img = img
+        self._pixels = None
+        self._area = None
+        self._perimeter = None
+        self._boundary_pixels = None
+        
+    def calculate_area(self):
+         
+        img_label_filter = np.where(se == self.value, 1, 0)  # 將label獨立出來並設成 1
+        self._ares = np.sum(img_label_filter)  # 計算像素個數
+
+    def calculate_piex(self):
+        self._piex = piex
