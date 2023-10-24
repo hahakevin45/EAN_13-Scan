@@ -7,7 +7,7 @@ from binarization import sauvola_threshold
 from label import sequential_labeling
 from filter import arrea_filter
 from filter import isoperimetric_inequality
-
+from feature import Label
 
 if __name__ == '__main__':
 
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     # 使用cv2讀取照片
     img = cv2.imread("sample/test2.bmp", cv2.IMREAD_GRAYSCALE)
 
-    # 使用 sauvla theresshold 二值化矩陣
+    # Use sauvla theresshold to binarize image
     img_sauvola = sauvola_threshold(img.copy(), max=1, block_size=30, R=0.2)
 
     # # HACK 功能:侵蝕然後膨脹，但重要性未知，先使用內建函數跳過
@@ -40,21 +40,24 @@ if __name__ == '__main__':
     print("區域數量:", len(unique_labels))
 
     # img_in_filter = boundary(img_area_filter)
-       
+    label_list = []
+    for label in unique_labels:
+        label_list.append(Label(label, img_area_filter))
+
 
     # 計算程式運行時間
     end_time = time.time()
     print(f"Average Time: {end_time-start_time}s.")
 
-    # show image
+    # show image 2
     plt.figure(figsize=(15, 15))
     plt.subplot(122)
     plt.imshow(img_area_filter, cmap='gray', vmin=0, vmax=1)
     plt.title('Isoperimetric Inequality')
 
-    # show image
+    # show image 1
     plt.subplot(121)
-    plt.imshow(img_area_filter, cmap='gray', vmin=0, vmax=1)
-    plt.title('area_filter')
+    plt.imshow(img_sauvola, cmap='gray', vmin=0, vmax=1)
+    plt.title('sauvola')
 
     plt.show()

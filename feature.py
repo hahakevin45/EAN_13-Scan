@@ -10,7 +10,7 @@ def fonund_mass(img) -> list:
 
 
 # 尋找邊界
-def boundary(img) -> list:
+def found_boundary(img) -> list:
     s = np.argwhere(img == 0)[0]
     s = tuple(s)
     # 設定當前像素 c 和 4-鄰居 b
@@ -49,15 +49,12 @@ class Label:
     def __init__(self, value, img) -> None:
         self.value = value
         self.img = img
-        self._pixels = None
-        self._area = None
-        self._perimeter = None
-        self._boundary_pixels = None
         
-    def calculate_area(self):
-         
-        img_label_filter = np.where(se == self.value, 1, 0)  # 將label獨立出來並設成 1
-        self._ares = np.sum(img_label_filter)  # 計算像素個數
+        self._pixels = np.where(self.img == self.value, 1, 0)  # 將label獨立出來並設成 1
+        self._ares = np.sum(self._pixels)  # 計算像素個數
 
-    def calculate_piex(self):
-        self._piex = piex
+        self._mass = fonund_mass(self.img)
+        self._boundary_pixels = found_boundary(self.img)
+
+        self._perimeter = len(self._boundary_pixels)
+
