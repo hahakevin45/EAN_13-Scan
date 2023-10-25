@@ -39,10 +39,14 @@ if __name__ == '__main__':
     print(unique_labels)
     print("區域數量:", len(unique_labels))
 
-    # img_in_filter = boundary(img_area_filter)
+    
+    # label 物件化
     label_list = []
     for label in unique_labels:
         label_list.append(Label(label, img_area_filter))
+
+    # for label in label_list:
+    #     print(f"Label value {label.value}, mass {label._mass}")
 
 
     # 計算程式運行時間

@@ -2,16 +2,20 @@ import numpy as np
 
 
 # 尋找重心
-def fonund_mass(img) -> list:
-    img = np.where(img > 1, 1, 0)
-    mass_i = np.mean(img, axis=0)
-    mass_j = np.mean(img, axis=1)
-    return [mass_i, mass_j]
 
+def found_mass(img, value, area) -> list:
+    img = np.where(img == value, 1, 0)
+
+    # 計算重心座標
+    mass_i = np.sum(np.sum(img,axis=0) * np.arange(img.shape[1]))
+    mass_j = np.sum(np.sum(img,axis=1) * np.arange(img.shape[0]))
+
+    return [mass_i / area, mass_j / area]
 
 # 尋找邊界
-def found_boundary(img) -> list:
-    s = np.argwhere(img == 0)[0]
+def found_boundary(img, value) -> list:
+    img = np.where(img == value, 1, 0 )
+    s = np.argwhere(img == 1)[0]
     s = tuple(s)
     # 設定當前像素 c 和 4-鄰居 b
     c = s
@@ -53,8 +57,8 @@ class Label:
         self._pixels = np.where(self.img == self.value, 1, 0)  # 將label獨立出來並設成 1
         self._ares = np.sum(self._pixels)  # 計算像素個數
 
-        self._mass = fonund_mass(self.img)
-        self._boundary_pixels = found_boundary(self.img)
+        self._mass = found_mass(self.img, self.value, self._ares)
+        self._boundary_pixels = found_boundary(self.img, self.value)
 
         self._perimeter = len(self._boundary_pixels)
 
