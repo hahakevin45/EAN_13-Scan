@@ -25,7 +25,7 @@ def found_boundary(img, value) -> list:
     neighbors_order = [(0, -1), (-1, -1), (-1, 0), (-1, 1),
                        (0, 1), (1, 1), (1, 0), (1, -1)]
 
-    boundary_pixels = []  # 存儲邊界像素的座標
+    boundary_pixels = [s]  # 存儲邊界像素的座標
 
     while True:
         # 找到 8-鄰居中第一個屬於 S 的像素
@@ -38,13 +38,17 @@ def found_boundary(img, value) -> list:
         c = ni
         # b = tuple((ni[0], ni[1] - 1))
         neighbors_order = neighbors_order[i-1:] + neighbors_order[:i-1]
+        
+        # 當 c 已經存在於 boundary_pixels 時結束迴圈
+        if c in boundary_pixels:
+            break
 
         # 將當前像素座標加入結果列表
         boundary_pixels.append(c)
 
         # 當 c 等於 s 時結束迴圈
-        if c == s:
-            break
+        # if c == s :
+        #     break
 
     return boundary_pixels
 
@@ -55,9 +59,9 @@ class Label:
         self.img = img
         
         self._pixels = np.where(self.img == self.value, 1, 0)  # 將label獨立出來並設成 1
-        self._ares = np.sum(self._pixels)  # 計算像素個數
+        self._area = np.sum(self._pixels)  # 計算像素個數
 
-        self._mass = found_mass(self.img, self.value, self._ares)
+        self._mass = found_mass(self.img, self.value, self._area)
         self._boundary_pixels = found_boundary(self.img, self.value)
 
         self._perimeter = len(self._boundary_pixels)

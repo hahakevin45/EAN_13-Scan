@@ -21,7 +21,9 @@ def isoperimetric_inequality(img, label):
     area = np.sum(img) / label 
     return perimeter*perimeter/area
 
-# def isoperimetric_inequality_filter(img,min=25):
-#     label_table = set(img.flatten())
-#     for label in label_table:
-#         img_
+def least_square_method(mass_list):
+    mean_x = sum(mass_list[0])/len(mass_list)
+    mean_y = sum(mass_list[1])/len(mass_list)
+    a = 
+    b = mean_y - a*mean_x
+    return([a, b])
