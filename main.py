@@ -7,6 +7,7 @@ from binarization import sauvola_threshold
 from label import sequential_labeling
 from filter import arrea_filter
 from feature import Label
+from feature import least_square_method
 
 if __name__ == '__main__':
 
@@ -14,7 +15,7 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # 使用cv2讀取照片
-    img = cv2.imread("sample/test1.bmp", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread("sample/test2.bmp", cv2.IMREAD_GRAYSCALE)
     size_of_image = np.shape(img)
 
     print(size_of_image)
@@ -33,7 +34,7 @@ if __name__ == '__main__':
     print("區域數量:", len(unique_labels)-1)
 
     # area_filter
-    img_area_filter = arrea_filter(img_label, size_of_image[0]*size_of_image[1]/2400, size_of_image[0]*size_of_image[1]/80)
+    img_area_filter = arrea_filter(img_label, size_of_image[0]*size_of_image[1]/2400, size_of_image[0]*size_of_image[1]/30)
     unique_labels = set(img_area_filter.flatten())
     unique_labels.remove(0)
     print("\n After area filter: \n")
@@ -50,9 +51,19 @@ if __name__ == '__main__':
     for label in label_list:
         if label._perimeter*label._perimeter/label._area < 60:
             label_list.remove(label)
-        # print(f"Label value {label.value}, perimeter {label._perimeter}")
+        print(f"Label value {label.value}, perimeter {label._perimeter}")
 
 
+    # claculate line
+    line = least_square_method(list(label._mass for label in label_list))
+    print(f"Line: y = {line[0]} x + {line[1]}")
+
+
+    for label in label_list:
+        label.found_distance(line)
+        print(f"label: {label.value} Distance: {label.distance} Mass: {label._mass}")
+        if label.distance > 0.2:
+            label_list.remove(label)
     # # 單獨測試 label     
     # label_test = Label(953, img_area_filter);
     # print(label_test.value)
@@ -70,7 +81,7 @@ if __name__ == '__main__':
     result = result.astype(int) * img_area_filter
         
     unique_labels = set(result.flatten())
-    print("\n After 圓周不等式 filter: \n")
+    print("\n After mass filter: \n")
     unique_labels.remove(0)
     print(unique_labels)
     print("區域數量:", len(unique_labels))
@@ -83,7 +94,7 @@ if __name__ == '__main__':
     # show image 2
     plt.figure(figsize=(15, 15))
     plt.subplot(122)
-    plt.imshow(result, cmap='gray', vmin=0, vmax=10)
+    plt.imshow(result, cmap='gray', vmin=0, vmax=1)
     plt.title('img')
 
     # show image 1

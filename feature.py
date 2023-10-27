@@ -52,6 +52,15 @@ def found_boundary(img, value) -> list:
 
     return boundary_pixels
 
+# 求重心近似直線
+def least_square_method(mass_list):
+    mean_x = sum(item[0] for item in mass_list)/len(mass_list)
+    mean_y = sum(item[1] for item in mass_list)/len(mass_list)
+    a = sum((item[0]-mean_x)*(item[1]-mean_y) for item in mass_list) / sum((item[0]-mean_x)**2 for item in mass_list)
+
+    b = mean_y - a*mean_x
+    return([a, b])
+
 
 class Label:
     def __init__(self, value, img) -> None:
@@ -65,4 +74,6 @@ class Label:
         self._boundary_pixels = found_boundary(self.img, self.value)
 
         self._perimeter = len(self._boundary_pixels)
+    def found_distance(self,line):
+        self.distance = abs(line[0]*self._mass[0]-self._mass[1]+line[1])/((line[0]**2+line[1]**2)**0.5)
 
