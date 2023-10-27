@@ -22,8 +22,8 @@ def isoperimetric_inequality(img, label):
     return perimeter*perimeter/area
 
 def least_square_method(mass_list):
-    mean_x = sum(mass_list[0])/len(mass_list)
-    mean_y = sum(mass_list[1])/len(mass_list)
-    a = 
+    mean_x = sum(item[0] for item in mass_list)/len(mass_list)
+    mean_y = sum(item[1] for item in mass_list)/len(mass_list)
+    a = sum((item[0]-mean_x)*(item[1]-mean_y) for item in mass_list)/sum((item[0]-mean_x for item in mass_list)*(item[0]-mean_x for item in mass_list))
     b = mean_y - a*mean_x
     return([a, b])
