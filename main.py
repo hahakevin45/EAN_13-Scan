@@ -8,6 +8,7 @@ from label import sequential_labeling
 from filter import arrea_filter
 from feature import Label
 from feature import least_square_method
+from decode import decode
 
 if __name__ == '__main__':
 
@@ -15,21 +16,17 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # 使用cv2讀取照片
-    img = cv2.imread("sample/test2.bmp", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread("sample/test1.bmp", cv2.IMREAD_GRAYSCALE)
     size_of_image = np.shape(img)
+    # print(f"size of image {size_of_image}")
 
-    print(size_of_image)
     # Use sauvla theresshold to binarize image
     img_sauvola = sauvola_threshold(img.copy(), max=1, block_size=30, R=0.2)
-
-    # # HACK 功能:侵蝕然後膨脹，但重要性未知，先使用內建函數跳過
-    # kernel = np.ones((2, 2), np.uint8)
-    # img_dilation = cv2.dilate(img_sauvola, kernel, iterations=1)  # 侵蝕
-    # img_erosion = cv2.erode(img_dilation, kernel, iterations=1)  # 膨脹
 
     # label
     img_label = sequential_labeling(img_sauvola.copy())
     unique_labels = set(img_label.flatten())
+    print("Afer label")
     print(unique_labels)
     print("區域數量:", len(unique_labels)-1)
 
@@ -48,10 +45,26 @@ if __name__ == '__main__':
         label_list.append(Label(label, img_area_filter))
 
     # 圓周不等式 filter
-    for label in label_list:
-        if label._perimeter*label._perimeter/label._area < 60:
-            label_list.remove(label)
-        print(f"Label value {label.value}, perimeter {label._perimeter}")
+    # for label in label_list:
+    #     if label._perimeter*label._perimeter/label._area < 60:
+    #         label_list.remove(label)
+    #     print(f"Label value {label.value}, perimeter {label._perimeter}")
+
+    # 檢查mass 是否通過 區塊本身
+    # for label in label_list:
+    #     neighbors_order = [(0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1)]
+    #     std_mass = [round(label._mass[0]),round(label._mass[1])]
+    #     in_mass = False
+    #     for neighbors in neighbors_order:
+    #         std_mass = [std_mass[0] + neighbors[0], std_mass[1]+neighbors[1]]
+    #         if std_mass[0]>size_of_image[0]-1:
+    #             std_mass[0]==[size_of_image[0]-1,std_mass[1]]                     
+    #         if std_mass[1]>size_of_image[1]-1:
+    #             std_mass = [std_mass[0],size_of_image[1]-1]
+    #         if label._pixels[std_mass[0],std_mass[1]]==1:
+    #             in_mass = True
+    #     if in_mass != True:
+    #         label_list.remove(label)
 
 
     # claculate line
@@ -61,45 +74,46 @@ if __name__ == '__main__':
 
     for label in label_list:
         label.found_distance(line)
-        print(f"label: {label.value} Distance: {label.distance} Mass: {label._mass}")
-        if label.distance > 0.2:
+        # print(f"label: {label.value} Distance: {label.distance} Mass: {label._mass}")
+        if label.distance > 0.6:
             label_list.remove(label)
-    # # 單獨測試 label     
-    # label_test = Label(953, img_area_filter);
-    # print(label_test.value)
-    # print(label_test._boundary_pixels)
-    # print(label_test._perimeter)
 
-    # 顯示包含在 label_list 的圖片檔
+    # 顯示包含在 label_list 的圖片
     isperimetric_incequality_unique = set()
     for label in label_list:
         isperimetric_incequality_unique.add(label.value)
-    # 使用 np.isin 生成布尔数组，True 表示在 unique_labels 中，False 表示不在
-    result = np.isin(img_area_filter, list(isperimetric_incequality_unique))
-
-    # 将布尔数组中的 True 替换为对应的值，False 替换为 0
-    result = result.astype(int) * img_area_filter
-        
+    result = np.isin(img_area_filter, list(isperimetric_incequality_unique)) # 使用 np.isin 產生布林數組，True 表示在 unique_labels 中，False 表示不在
+    result = result.astype(int) * img_area_filter # 將 True 替換為對應的值，False 替換為 0
     unique_labels = set(result.flatten())
     print("\n After mass filter: \n")
     unique_labels.remove(0)
     print(unique_labels)
     print("區域數量:", len(unique_labels))
 
+    # 偵測EAN-13 cod3
+    result = np.where(result > 1, 1, 0)
+    ean13, is_valid, thresh = decode(result)
+
     # 計算程式運行時間
     end_time = time.time()
     print(f"Average Time: {end_time-start_time}s.")
     
 
-    # show image 2
+    # show image 1
     plt.figure(figsize=(15, 15))
+    plt.subplot(121)
+    plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.title('Original image')
+
+    # show image 2
     plt.subplot(122)
     plt.imshow(result, cmap='gray', vmin=0, vmax=1)
-    plt.title('img')
-
-    # show image 1
-    plt.subplot(121)
-    plt.imshow(img_area_filter, cmap='gray', vmin=0, vmax=1)
-    plt.title('img_area_filter')
+    plt.text(30, 50, ean13, {'fontsize':18},bbox={
+    'boxstyle':'round',
+    'facecolor':'#F5EEC8',
+    'edgecolor':'#555843',
+    'pad':0.5,
+    'linewidth':3})
+    plt.title('rusult')
 
     plt.show()
