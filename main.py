@@ -34,9 +34,6 @@ if __name__ == '__main__':
     img_area_filter = arrea_filter(img_label, size_of_image[0]*size_of_image[1]/2400, size_of_image[0]*size_of_image[1]/30)
     unique_labels = set(img_area_filter.flatten())
     unique_labels.remove(0)
-    print("\n After area filter: \n")
-    print(unique_labels)
-    print("區域數量:", len(unique_labels))
 
     
     # label 物件化
@@ -44,29 +41,7 @@ if __name__ == '__main__':
     for label in unique_labels:
         label_list.append(Label(label, img_area_filter))
 
-    # 圓周不等式 filter
-    # for label in label_list:
-    #     if label._perimeter*label._perimeter/label._area < 60:
-    #         label_list.remove(label)
-    #     print(f"Label value {label.value}, perimeter {label._perimeter}")
-
-    # 檢查mass 是否通過 區塊本身
-    # for label in label_list:
-    #     neighbors_order = [(0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1)]
-    #     std_mass = [round(label._mass[0]),round(label._mass[1])]
-    #     in_mass = False
-    #     for neighbors in neighbors_order:
-    #         std_mass = [std_mass[0] + neighbors[0], std_mass[1]+neighbors[1]]
-    #         if std_mass[0]>size_of_image[0]-1:
-    #             std_mass[0]==[size_of_image[0]-1,std_mass[1]]                     
-    #         if std_mass[1]>size_of_image[1]-1:
-    #             std_mass = [std_mass[0],size_of_image[1]-1]
-    #         if label._pixels[std_mass[0],std_mass[1]]==1:
-    #             in_mass = True
-    #     if in_mass != True:
-    #         label_list.remove(label)
-
-
+    
     # claculate line
     line = least_square_method(list(label._mass for label in label_list))
     print(f"Line: y = {line[0]} x + {line[1]}")
