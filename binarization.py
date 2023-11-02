@@ -19,7 +19,7 @@ def adaptive_threshold(img, max=1, block_size=20, C=0):
     return img
 
 # 計算Sauvola閾值
-def sauvola_threshold(img, max = 1, block_size=30, R=0.5):
+def sauvola_threshold(img, max = 1, block_size=30, sauvola_R=0.5):
     img_size = np.shape(img)
     threshold_img = np.zeros_like(img, dtype=np.uint8)
 
@@ -33,7 +33,7 @@ def sauvola_threshold(img, max = 1, block_size=30, R=0.5):
             std_dev = np.std(block)
             
             # 計算Sauvola閾值
-            threshold = mean * (1 + R * ((std_dev / 128) - 1))
+            threshold = mean * (1 + sauvola_R * ((std_dev / 128) - 1))
             
             # 根據閾值進行二值化
             threshold_img[i:i+block_size, j:j+block_size] = (block < threshold) * max

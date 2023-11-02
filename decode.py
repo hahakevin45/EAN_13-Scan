@@ -1,12 +1,13 @@
 
 
 
-
+# 解碼函式，輸入二值化的圖片，進行EAN-13條碼解碼
 def decode(img):
     thresh = img
     ean13 = None
     is_valid = None
-    #scan lines
+    
+    # 掃描每一行像素
     for i in range(img.shape[0]-1,0,-1):
         try:
             ean13, is_valid = decode_line(thresh[i])
@@ -19,6 +20,8 @@ def decode(img):
         
     return ean13, is_valid, thresh
 
+
+# 解碼單行像素函式
 def decode_line(line):
     bars = read_bars(line)
     left_guard, left_patterns, center_guard, right_patterns, right_guard = classify_bars(bars)
@@ -31,10 +34,15 @@ def decode_line(line):
     is_valid = verify(ean13)
     return ean13, is_valid
             
+
+# 將圖片中的模式轉換為長度
 def convert_patterns_to_length(patterns):
     for i in range(len(patterns)):
         patterns[i] = len(patterns[i])
 
+
+
+# 讀取模式函式
 def read_patterns(patterns,is_left=True):
     #print(len(patterns))
     codes = []
@@ -59,6 +67,8 @@ def read_patterns(patterns,is_left=True):
     return codes
         
         
+
+# 根據值獲取模式AT
 def get_AT(value):
     if value < 2.5/7:
         return 2
@@ -69,6 +79,9 @@ def get_AT(value):
     else:
         return 5
 
+
+
+# 左半邊解碼函式
 def decode_left(at1, at2, m1, m2, m3, m4):
     patterns = {}
     patterns["2,2"]={"code":"6","parity":"O"}
@@ -90,6 +103,7 @@ def decode_left(at1, at2, m1, m2, m3, m4):
     pattern_dict = patterns[str(at1) + "," + str(at2)]
     code = 0
     use_alternative = False
+    # 根據條件使用替代模式
     if int(at1) == 3 and int(at2) == 3:
         if m3+1>=m4:
             use_alternative = True
@@ -108,7 +122,9 @@ def decode_left(at1, at2, m1, m2, m3, m4):
         code = pattern_dict["code"]
     final = {"code": code, "parity": pattern_dict["parity"]}
     return final    
-    
+
+
+# 右半邊解碼函式
 def decode_right(at1, at2, m1, m2, m3, m4):
     patterns = {}
     patterns["2,2"]={"code":"6"}
@@ -122,6 +138,8 @@ def decode_right(at1, at2, m1, m2, m3, m4):
     pattern_dict = patterns[str(at1) + "," + str(at2)]
     code = 0
     use_alternative = False
+
+    # 根據條件使用替代模式
     if int(at1) == 3 and int(at2) == 3:
         if m3+1>=m4:
             use_alternative = True
@@ -135,8 +153,10 @@ def decode_right(at1, at2, m1, m2, m3, m4):
     final = {"code": code}
     return final
     
+
+# 讀取條碼像素函式
 def read_bars(line):
-    replace_255_to_1(line)
+    # replace_255_to_1(line)
     bars = []
     current_length = 1
     for i in range(len(line)-1):
@@ -145,7 +165,7 @@ def read_bars(line):
         else:
             bars.append(current_length * str(line[i]))
             current_length = 1
-    #remove quite zone
+    # 移除安全區
     bars.pop(0)
     #print(len(bars))
     return bars
@@ -170,7 +190,7 @@ def verify(ean13):
         checksum = 10 - units_digit
     else:
         checksum = 0
-    print("The checksum of "+ean13 + " is " + str(checksum))
+    print("The checksum of is " + str(checksum))
     if checksum == int(ean13[-1]):
         print("The code is valid.")
         return True
@@ -187,11 +207,6 @@ def get_ean13(left_codes,right_codes):
         ean13 = ean13 + str(code["code"])
     return ean13
     
-def replace_255_to_1(array):
-    for i in range(len(array)):
-        if array[i] == 255:
-            array[i] = 1
-
 def get_first_digit(left_codes):
     parity_dict = {}
     parity_dict["OOOOOO"] = 0
