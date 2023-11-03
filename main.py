@@ -67,7 +67,7 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # 使用cv2讀取照片
-    img = cv2.imread("sample/test2.bmp", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread("\sample\data1_image\image_1.bmp", cv2.IMREAD_GRAYSCALE)
 
     #辨識圖片的EAN-13條碼
     ean13, is_valid, thresh = process(img, max_value=1, sauvola_block_size=30,sauvola_R= 0.2)

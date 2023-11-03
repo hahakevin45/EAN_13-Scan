@@ -3,28 +3,31 @@
 
 # 解碼函式，輸入二值化的圖片，進行EAN-13條碼解碼
 def decode(img):
-    thresh = img
     ean13 = None
     is_valid = None
     
     # 掃描每一行像素
     for i in range(img.shape[0]-1,0,-1):
+        if i == 618:
+            print("on")
         try:
-            ean13, is_valid = decode_line(thresh[i])
+            ean13, is_valid = decode_line(img[i])
         except Exception as e:
             #print(e)
-            # print("failed")
+            # print(f"failed on {i}")
             pass
         if is_valid:
             break
         
-    return ean13, is_valid, thresh
+    return ean13, is_valid, img
 
 
-# 解碼單行像素函式
+# 解碼單行像素
 def decode_line(line):
     bars = read_bars(line)
     left_guard, left_patterns, center_guard, right_patterns, right_guard = classify_bars(bars)
+    # if len(left_patterns) == 0:
+        # return None,None
     convert_patterns_to_length(left_patterns)
     convert_patterns_to_length(right_patterns)
     left_codes = read_patterns(left_patterns,is_left=True)
@@ -152,11 +155,10 @@ def decode_right(at1, at2, m1, m2, m3, m4):
         code = pattern_dict["code"]
     final = {"code": code}
     return final
-    
+   
 
 # 讀取條碼像素函式
 def read_bars(line):
-    # replace_255_to_1(line)
     bars = []
     current_length = 1
     for i in range(len(line)-1):
@@ -167,15 +169,15 @@ def read_bars(line):
             current_length = 1
     # 移除安全區
     bars.pop(0)
-    #print(len(bars))
+    # print(len(bars))
     return bars
     
 def classify_bars(bars):
-    left_guard = bars[0:3]
-    left_patterns = bars[3:27]
-    center_guard = bars[27:32]
-    right_patterns = bars[32:56]
-    right_guard = bars[56:59]
+    left_guard = bars[0:3] # 左側檢查碼
+    left_patterns = bars[3:27] # 左側編碼
+    center_guard = bars[27:32] # 中間檢查碼
+    right_patterns = bars[32:56] # 右側編碼
+    right_guard = bars[56:59] # 右側檢查碼
     return left_guard, left_patterns, center_guard, right_patterns, right_guard
 
 def verify(ean13):
