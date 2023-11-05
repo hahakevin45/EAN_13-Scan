@@ -71,8 +71,8 @@ class Label:
         self._area = np.sum(self._pixels)  # 計算像素個數
 
         self._mass = found_mass(self.img, self.value, self._area)
-        self._boundary_pixels = found_boundary(self.img, self.value)
 
+        self._boundary_pixels = found_boundary(self.img, self.value)
         self._perimeter = len(self._boundary_pixels)
     def found_distance(self,line):
         self.distance = abs(line[0]*self._mass[0]-self._mass[1]+line[1])/((line[0]**2+line[1]**2)**0.5)

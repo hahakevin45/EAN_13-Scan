@@ -26,8 +26,8 @@ def decode(img):
 def decode_line(line):
     bars = read_bars(line)
     left_guard, left_patterns, center_guard, right_patterns, right_guard = classify_bars(bars)
-    # if len(left_patterns) == 0:
-        # return None,None
+    if len(left_patterns) == 0:
+        return None,None
     convert_patterns_to_length(left_patterns)
     convert_patterns_to_length(right_patterns)
     left_codes = read_patterns(left_patterns,is_left=True)

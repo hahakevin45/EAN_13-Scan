@@ -15,9 +15,9 @@ def arrea_filter(img, min_area=200, max_area=5000):
 
     return img
 
-def isoperimetric_inequality(img, label): 
-    img = np.where(img == label, 1, 0)  # 將label獨立出來並設成 1  
-    perimeter = len(found_boundary(img))
-    area = np.sum(img) / label 
-    return perimeter*perimeter/area
+# def isoperimetric_inequality(img, label): 
+#     img = np.where(img == label, 1, 0)  # 將label獨立出來並設成 1  
+#     perimeter = len(found_boundary(img))
+#     area = np.sum(img) / label 
+#     return perimeter*perimeter/area
 
