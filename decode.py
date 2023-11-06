@@ -3,22 +3,22 @@
 # 解碼函式，輸入二值化的圖片，進行EAN-13條碼解碼
 def decode(img):
     ean13 = None
-    is_valid = None
+    check = None
 
     # 掃描每一行像素
     for i in range(img.shape[0]-1, 0, -1):
         if i == 618:
             print("on")
         try:
-            ean13, is_valid = decode_line(img[i])
+            ean13, check = decode_line(img[i])
         except Exception as e:
             # print(e)
             # print(f"failed on {i}")
             pass
-        if is_valid:
+        if check:
             break
 
-    return ean13, is_valid, img
+    return ean13, check, img
 
 
 # 解碼單行像素
@@ -27,7 +27,10 @@ def decode_line(line):
     left_guard, left_patterns, center_guard, right_patterns, right_guard = classify_bars(
         bars)
     if len(left_patterns) == 0:
-        return None, None
+        return False, False
+    if len(right_patterns) == 0:
+        return False, False
+
     convert_patterns_to_length(left_patterns)
     convert_patterns_to_length(right_patterns)
     left_codes = read_patterns(left_patterns, is_left=True)
@@ -193,10 +196,10 @@ def verify(ean13):
         checksum = 0
     print("The checksum of is " + str(checksum))
     if checksum == int(ean13[-1]):
-        print("The code is valid.")
+        print("The code is correct.")
         return True
     else:
-        print("The code is invalid.")
+        print("The code is correct.")
         return False
 
 

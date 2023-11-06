@@ -91,9 +91,9 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # 使用cv2讀取照片
-    img_re = cv2.imread("sample/data1_image/image_10.bmp",
-                        cv2.IMREAD_GRAYSCALE)
-    # img_re = cv2.imread("sample/test6.bmp", cv2.IMREAD_GRAYSCALE)
+    # img_re = cv2.imread("sample/data1_image/image_10.bmp",
+    #                     cv2.IMREAD_GRAYSCALE)
+    img_re = cv2.imread("sample/test1.bmp", cv2.IMREAD_GRAYSCALE)
     size_of_image = np.shape(img_re)
 
     # 正規化圖片大小
@@ -137,18 +137,18 @@ if __name__ == '__main__':
     # 旋轉圖形
     if is_valid == None or is_valid == False:
         try_way = "k=1 TRY"
-        img_rotation = np.rot90(img, k=1)
+        img_rotation = rotate_bound_white_bg(img, 90)
         ean13, is_valid, thresh = process(
             img_rotation, max_value=1, sauvola_block_size=60, sauvola_R=0.2, distance_filter=0.6)
 
     if is_valid == None or is_valid == False:
         try_way = "k=-1 TRY"
-        img_rotation = np.rot90(img, k=-1)
+        img_rotation = rotate_bound_white_bg(img, -90)
         ean13, is_valid, thresh = process(
             img_rotation, max_value=1, sauvola_block_size=60, sauvola_R=0.2, distance_filter=0.6)
     if is_valid == None or is_valid == False:
         try_way = "k=2 TRY"
-        img_rotation = np.rot90(img, k=2)
+        img_rotation = rotate_bound_white_bg(img, 180)
         ean13, is_valid, thresh = process(
             img_rotation, max_value=1, sauvola_block_size=60, sauvola_R=0.2, distance_filter=0.6)
 
