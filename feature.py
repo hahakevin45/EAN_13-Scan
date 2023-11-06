@@ -7,14 +7,16 @@ def found_mass(img, value, area) -> list:
     img = np.where(img == value, 1, 0)
 
     # 計算重心座標
-    mass_i = np.sum(np.sum(img,axis=0) * np.arange(img.shape[1]))
-    mass_j = np.sum(np.sum(img,axis=1) * np.arange(img.shape[0]))
+    mass_i = np.sum(np.sum(img, axis=0) * np.arange(img.shape[1]))
+    mass_j = np.sum(np.sum(img, axis=1) * np.arange(img.shape[0]))
 
     return [mass_i / area, mass_j / area]
 
 # 尋找邊界
+
+
 def found_boundary(img, value) -> list:
-    img = np.where(img == value, 1, 0 )
+    img = np.where(img == value, 1, 0)
     s = np.argwhere(img == 1)[0]
     s = tuple(s)
     # 設定當前像素 c 和 4-鄰居 b
@@ -38,7 +40,7 @@ def found_boundary(img, value) -> list:
         c = ni
         # b = tuple((ni[0], ni[1] - 1))
         neighbors_order = neighbors_order[i-1:] + neighbors_order[:i-1]
-        
+
         # 當 c 已經存在於 boundary_pixels 時結束迴圈
         if c in boundary_pixels:
             break
@@ -53,27 +55,32 @@ def found_boundary(img, value) -> list:
     return boundary_pixels
 
 # 求重心近似直線
+
+
 def least_square_method(mass_list):
     mean_x = sum(item[0] for item in mass_list)/len(mass_list)
     mean_y = sum(item[1] for item in mass_list)/len(mass_list)
-    a = sum((item[0]-mean_x)*(item[1]-mean_y) for item in mass_list) / sum((item[0]-mean_x)**2 for item in mass_list)
+    a = sum((item[0]-mean_x)*(item[1]-mean_y) for item in mass_list) / \
+        sum((item[0]-mean_x)**2 for item in mass_list)
 
     b = mean_y - a*mean_x
-    return([a, b])
+    return ([a, b])
 
 
 class Label:
     def __init__(self, value, img) -> None:
         self.value = value
         self.img = img
-        
-        self._pixels = np.where(self.img == self.value, 1, 0)  # 將label獨立出來並設成 1
+
+        self._pixels = np.where(self.img == self.value,
+                                1, 0)  # 將label獨立出來並設成 1
         self._area = np.sum(self._pixels)  # 計算像素個數
 
         self._mass = found_mass(self.img, self.value, self._area)
 
         self._boundary_pixels = found_boundary(self.img, self.value)
         self._perimeter = len(self._boundary_pixels)
-    def found_distance(self,line):
-        self.distance = abs(line[0]*self._mass[0]-self._mass[1]+line[1])/((line[0]**2+line[1]**2)**0.5)
 
+    def found_distance(self, line):
+        self.distance = abs(
+            line[0]*self._mass[0]-self._mass[1]+line[1])/((line[0]**2+line[1]**2)**0.5)

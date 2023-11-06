@@ -1,42 +1,42 @@
 
 
-
 # 解碼函式，輸入二值化的圖片，進行EAN-13條碼解碼
 def decode(img):
     ean13 = None
     is_valid = None
-    
+
     # 掃描每一行像素
-    for i in range(img.shape[0]-1,0,-1):
+    for i in range(img.shape[0]-1, 0, -1):
         if i == 618:
             print("on")
         try:
             ean13, is_valid = decode_line(img[i])
         except Exception as e:
-            #print(e)
+            # print(e)
             # print(f"failed on {i}")
             pass
         if is_valid:
             break
-        
+
     return ean13, is_valid, img
 
 
 # 解碼單行像素
 def decode_line(line):
     bars = read_bars(line)
-    left_guard, left_patterns, center_guard, right_patterns, right_guard = classify_bars(bars)
+    left_guard, left_patterns, center_guard, right_patterns, right_guard = classify_bars(
+        bars)
     if len(left_patterns) == 0:
-        return None,None
+        return None, None
     convert_patterns_to_length(left_patterns)
     convert_patterns_to_length(right_patterns)
-    left_codes = read_patterns(left_patterns,is_left=True)
-    right_codes = read_patterns(right_patterns,is_left=False)
-    ean13 = get_ean13(left_codes,right_codes)
-    print("Detected code: "+ ean13)
+    left_codes = read_patterns(left_patterns, is_left=True)
+    right_codes = read_patterns(right_patterns, is_left=False)
+    ean13 = get_ean13(left_codes, right_codes)
+    print("Detected code: " + ean13)
     is_valid = verify(ean13)
     return ean13, is_valid
-            
+
 
 # 將圖片中的模式轉換為長度
 def convert_patterns_to_length(patterns):
@@ -44,32 +44,30 @@ def convert_patterns_to_length(patterns):
         patterns[i] = len(patterns[i])
 
 
-
 # 讀取模式函式
-def read_patterns(patterns,is_left=True):
-    #print(len(patterns))
+def read_patterns(patterns, is_left=True):
+    # print(len(patterns))
     codes = []
     for i in range(6):
         start_index = i*4
         sliced = patterns[start_index:start_index+4]
-        #print(sliced)
+        # print(sliced)
         m1 = sliced[0]
         m2 = sliced[1]
         m3 = sliced[2]
         m4 = sliced[3]
-        total = m1+m2+m3+m4;
-        tmp1=(m1+m2)*1.0;
-        tmp2=(m2+m3)*1.0;
+        total = m1+m2+m3+m4
+        tmp1 = (m1+m2)*1.0
+        tmp2 = (m2+m3)*1.0
         at1 = get_AT(tmp1/total)
         at2 = get_AT(tmp2/total)
         if is_left:
-            decoded = decode_left(at1,at2,m1,m2,m3,m4)
+            decoded = decode_left(at1, at2, m1, m2, m3, m4)
         else:
-            decoded = decode_right(at1,at2,m1,m2,m3,m4)
+            decoded = decode_right(at1, at2, m1, m2, m3, m4)
         codes.append(decoded)
     return codes
-        
-        
+
 
 # 根據值獲取模式AT
 def get_AT(value):
@@ -83,79 +81,78 @@ def get_AT(value):
         return 5
 
 
-
 # 左半邊解碼函式
 def decode_left(at1, at2, m1, m2, m3, m4):
     patterns = {}
-    patterns["2,2"]={"code":"6","parity":"O"}
-    patterns["2,3"]={"code":"0","parity":"E"}
-    patterns["2,4"]={"code":"4","parity":"O"}
-    patterns["2,5"]={"code":"3","parity":"E"}
-    patterns["3,2"]={"code":"9","parity":"E"}
-    patterns["3,3"]={"code":"8","parity":"O","alter_code":"2"}
-    patterns["3,4"]={"code":"7","parity":"E","alter_code":"1"}
-    patterns["3,5"]={"code":"5","parity":"O"}
-    patterns["4,2"]={"code":"9","parity":"O"}
-    patterns["4,3"]={"code":"8","parity":"E","alter_code":"2"}
-    patterns["4,4"]={"code":"7","parity":"O","alter_code":"1"}
-    patterns["4,5"]={"code":"5","parity":"E"}
-    patterns["5,2"]={"code":"6","parity":"E"}
-    patterns["5,3"]={"code":"0","parity":"O"}
-    patterns["5,4"]={"code":"4","parity":"E"}
-    patterns["5,5"]={"code":"3","parity":"O"}
+    patterns["2,2"] = {"code": "6", "parity": "O"}
+    patterns["2,3"] = {"code": "0", "parity": "E"}
+    patterns["2,4"] = {"code": "4", "parity": "O"}
+    patterns["2,5"] = {"code": "3", "parity": "E"}
+    patterns["3,2"] = {"code": "9", "parity": "E"}
+    patterns["3,3"] = {"code": "8", "parity": "O", "alter_code": "2"}
+    patterns["3,4"] = {"code": "7", "parity": "E", "alter_code": "1"}
+    patterns["3,5"] = {"code": "5", "parity": "O"}
+    patterns["4,2"] = {"code": "9", "parity": "O"}
+    patterns["4,3"] = {"code": "8", "parity": "E", "alter_code": "2"}
+    patterns["4,4"] = {"code": "7", "parity": "O", "alter_code": "1"}
+    patterns["4,5"] = {"code": "5", "parity": "E"}
+    patterns["5,2"] = {"code": "6", "parity": "E"}
+    patterns["5,3"] = {"code": "0", "parity": "O"}
+    patterns["5,4"] = {"code": "4", "parity": "E"}
+    patterns["5,5"] = {"code": "3", "parity": "O"}
     pattern_dict = patterns[str(at1) + "," + str(at2)]
     code = 0
     use_alternative = False
     # 根據條件使用替代模式
     if int(at1) == 3 and int(at2) == 3:
-        if m3+1>=m4:
+        if m3+1 >= m4:
             use_alternative = True
     if int(at1) == 3 and int(at2) == 4:
-        if m2+1>=m3:
+        if m2+1 >= m3:
             use_alternative = True
     if int(at1) == 4 and int(at2) == 3:
-        if m2+1>=m1:
+        if m2+1 >= m1:
             use_alternative = True
     if int(at1) == 4 and int(at2) == 4:
-        if m1+1>=m2:
-            use_alternative = True            
+        if m1+1 >= m2:
+            use_alternative = True
     if use_alternative:
         code = pattern_dict["alter_code"]
     else:
         code = pattern_dict["code"]
     final = {"code": code, "parity": pattern_dict["parity"]}
-    return final    
+    return final
 
 
 # 右半邊解碼函式
 def decode_right(at1, at2, m1, m2, m3, m4):
     patterns = {}
-    patterns["2,2"]={"code":"6"}
-    patterns["2,4"]={"code":"4"}
-    patterns["3,3"]={"code":"8","alter_code":"2"}
-    patterns["3,5"]={"code":"5"}
-    patterns["4,2"]={"code":"9"}
-    patterns["4,4"]={"code":"7","alter_code":"1"}
-    patterns["5,3"]={"code":"0"}
-    patterns["5,5"]={"code":"3"}
+    patterns["2,2"] = {"code": "6"}
+    patterns["2,4"] = {"code": "4"}
+    patterns["3,3"] = {"code": "8", "alter_code": "2"}
+    patterns["3,5"] = {"code": "5"}
+    patterns["4,2"] = {"code": "9"}
+    patterns["4,4"] = {"code": "7", "alter_code": "1"}
+    patterns["5,3"] = {"code": "0"}
+    patterns["5,5"] = {"code": "3"}
     pattern_dict = patterns[str(at1) + "," + str(at2)]
     code = 0
     use_alternative = False
 
     # 根據條件使用替代模式
     if int(at1) == 3 and int(at2) == 3:
-        if m3+1>=m4:
+        if m3+1 >= m4:
             use_alternative = True
     if int(at1) == 4 and int(at2) == 4:
-        if m1+1>=m2:
-            use_alternative = True            
+        if m1+1 >= m2:
+            use_alternative = True
     if use_alternative:
         code = pattern_dict["alter_code"]
     else:
         code = pattern_dict["code"]
     final = {"code": code}
     return final
-   
+
 
 # 讀取條碼像素函式
 def read_bars(line):
@@ -171,17 +168,19 @@ def read_bars(line):
     bars.pop(0)
     # print(len(bars))
     return bars
-    
+
+
 def classify_bars(bars):
-    left_guard = bars[0:3] # 左側檢查碼
-    left_patterns = bars[3:27] # 左側編碼
-    center_guard = bars[27:32] # 中間檢查碼
-    right_patterns = bars[32:56] # 右側編碼
-    right_guard = bars[56:59] # 右側檢查碼
+    left_guard = bars[0:3]  # 左側檢查碼
+    left_patterns = bars[3:27]  # 左側編碼
+    center_guard = bars[27:32]  # 中間檢查碼
+    right_patterns = bars[32:56]  # 右側編碼
+    right_guard = bars[56:59]  # 右側檢查碼
     return left_guard, left_patterns, center_guard, right_patterns, right_guard
 
+
 def verify(ean13):
-    weight = [1,3,1,3,1,3,1,3,1,3,1,3,1,3]
+    weight = [1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3]
     weighted_sum = 0
     for i in range(12):
         weighted_sum = weighted_sum + weight[i] * int(ean13[i])
@@ -200,7 +199,8 @@ def verify(ean13):
         print("The code is invalid.")
         return False
 
-def get_ean13(left_codes,right_codes):
+
+def get_ean13(left_codes, right_codes):
     ean13 = ""
     ean13 = ean13 + str(get_first_digit(left_codes))
     for code in left_codes:
@@ -208,7 +208,8 @@ def get_ean13(left_codes,right_codes):
     for code in right_codes:
         ean13 = ean13 + str(code["code"])
     return ean13
-    
+
+
 def get_first_digit(left_codes):
     parity_dict = {}
     parity_dict["OOOOOO"] = 0
@@ -225,4 +226,3 @@ def get_first_digit(left_codes):
     for code in left_codes:
         parity = parity + code["parity"]
     return parity_dict[parity]
-    

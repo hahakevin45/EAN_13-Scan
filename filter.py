@@ -2,6 +2,7 @@ import numpy as np
 
 from feature import found_boundary
 
+
 def arrea_filter(img, min_area=200, max_area=5000):
     "過濾面積大於 max_area 和小於 min_area 面積的label"
     label_table = set(img.flatten())
@@ -15,9 +16,8 @@ def arrea_filter(img, min_area=200, max_area=5000):
 
     return img
 
-# def isoperimetric_inequality(img, label): 
-#     img = np.where(img == label, 1, 0)  # 將label獨立出來並設成 1  
+# def isoperimetric_inequality(img, label):
+#     img = np.where(img == label, 1, 0)  # 將label獨立出來並設成 1
 #     perimeter = len(found_boundary(img))
-#     area = np.sum(img) / label 
+#     area = np.sum(img) / label
 #     return perimeter*perimeter/area
-

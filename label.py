@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit 
+from numba import njit
 
 
 @njit
@@ -17,7 +17,7 @@ def sequential_labeling(img):
             equivalent_labels[root1] = root2
 
     img_size = np.shape(img)
-    labels = np.zeros(img_size, dtype = np.int64)
+    labels = np.zeros(img_size, dtype=np.int64)
     equivalence = list(range(img_size[0] * img_size[1]))
 
     current_label = 1
@@ -47,15 +47,16 @@ def sequential_labeling(img):
         for j in range(img_size[1]):
             if img[i, j] == 1:
                 labels[i, j] = find_lowest_label(equivalence, labels[i, j])
-                
+
     # # 使用 set 獲取唯一標籤的數量
     # unique_labels = set(labels.flatten())
 
     # # 不包括背景標籤 0
     # region_count = len(unique_labels) - 1
     # print("區域數量:", region_count)
-        
+
     return labels
+
 
 if __name__ == "__main__":
     binary_image = np.array([[0, 1, 0, 0, 1],
@@ -65,4 +66,3 @@ if __name__ == "__main__":
 
     labeled_image = sequential_labeling(binary_image)
     print(labeled_image)
-    
