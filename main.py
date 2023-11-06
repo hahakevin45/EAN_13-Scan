@@ -86,8 +86,6 @@ def rotate_bound_white_bg(img, angle):
  
 
 
-
-
 if __name__ == '__main__':
 
     # 紀錄程式開始時間
@@ -117,7 +115,7 @@ if __name__ == '__main__':
         ean13, is_valid, thresh = process(img_rotation, max_value=1, sauvola_block_size=90,sauvola_R= 0.2, distance_filter=0.3)
      
     if is_valid == None or is_valid == False:
-        try_way == "rotate -45"
+        try_way == "rotate -45 and small decode"
         img_rotation = rotate_bound_white_bg(img, -45)
         ean13, is_valid, thresh = process(img_rotation, max_value=1, sauvola_block_size=120,sauvola_R= 0.2, distance_filter=10, min_scale=20000, max_scale=70)
      
