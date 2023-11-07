@@ -45,12 +45,12 @@ def found_boundary(img, value) -> list:
         if c in boundary_pixels:
             break
 
-        # 將當前像素座標加入結果列表
-        boundary_pixels.append(c)
-
         # 當 c 等於 s 時結束迴圈
         # if c == s :
         #     break
+
+        # 將當前像素座標加入結果列表
+        boundary_pixels.append(c)
 
     return boundary_pixels
 

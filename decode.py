@@ -7,8 +7,7 @@ def decode(img):
 
     # 掃描每一行像素
     for i in range(img.shape[0]-1, 0, -1):
-        if i == 618:
-            print("on")
+ 
         try:
             ean13, check = decode_line(img[i])
         except Exception as e:
@@ -36,7 +35,7 @@ def decode_line(line):
     left_codes = read_patterns(left_patterns, is_left=True)
     right_codes = read_patterns(right_patterns, is_left=False)
     ean13 = get_ean13(left_codes, right_codes)
-    print("Detected code: " + ean13)
+    # print("Detected code: " + ean13)
     is_valid = verify(ean13)
     return ean13, is_valid
 
@@ -194,12 +193,12 @@ def verify(ean13):
         checksum = 10 - units_digit
     else:
         checksum = 0
-    print("The checksum of is " + str(checksum))
+    # print("The checksum of is " + str(checksum))
     if checksum == int(ean13[-1]):
-        print("The code is correct.")
+        # print("The code is correct.")
         return True
     else:
-        print("The code is correct.")
+        # print("The code is incorrect.")
         return False
 
 

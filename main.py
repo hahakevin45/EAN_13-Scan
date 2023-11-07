@@ -4,13 +4,13 @@ import time
 
 from binarization import sauvola_threshold
 from label import sequential_labeling
-from filter import arrea_filter
+from filter import size_filter
 from feature import Label, least_square_method
 from decode import decode
 from show_image import show_rusult_image, show_gray_image, label_list_to_img
 
 
-def process(img, max_value, sauvola_block_size, sauvola_R, distance_filter, min_scale=2400, max_scale=30):
+def decode_process(img, max_value, sauvola_block_size, sauvola_R, distance_filter, min_scale=2400, max_scale=30):
 
     size_of_image = np.shape(img)
 
@@ -24,7 +24,7 @@ def process(img, max_value, sauvola_block_size, sauvola_R, distance_filter, min_
     unique_labels.remove(0)
 
     # area_filter
-    img_area_filter = arrea_filter(
+    img_area_filter = size_filter(
         img_label, size_of_image[0]*size_of_image[1]/min_scale,  size_of_image[0]*size_of_image[1]/max_scale)
     unique_labels = set(img_area_filter.flatten())
 
@@ -35,7 +35,7 @@ def process(img, max_value, sauvola_block_size, sauvola_R, distance_filter, min_
 
     # claculate line
     line = least_square_method(list(label._mass for label in label_list))
-    print(f"Line: y = {line[0]} x + {line[1]}")
+    # print(f"Line: y = {line[0]} x + {line[1]}")
 
     # 過濾離線過遠的區塊
     for label in label_list:
@@ -44,7 +44,7 @@ def process(img, max_value, sauvola_block_size, sauvola_R, distance_filter, min_
         # print(f"label: {label.value} Distance: {label.distance} Mass: {label._mass}")
     label_list = [x for x in label_list if x.distance < distance_filter]
 
-    print("After mass filter")
+    # print("After mass filter")
     # print(f"label list {label_list}")
 
     # 將 label_list 剩下的 label 顯示在rusult
@@ -85,79 +85,125 @@ def rotate_bound_white_bg(img, angle):
     # return cv2.warpAffine(image, M, (nW, nH))
 
 
-if __name__ == '__main__':
-
+def process(file_name="test1"):
     # 紀錄程式開始時間
     start_time = time.time()
 
-    # 使用cv2讀取照片
-    # img_re = cv2.imread("sample/data1_image/image_10.bmp",
-    #                     cv2.IMREAD_GRAYSCALE)
-    img_re = cv2.imread("sample/test1.bmp", cv2.IMREAD_GRAYSCALE)
-    size_of_image = np.shape(img_re)
+    # file_name = "image_1"
 
+    # 使用cv2讀取照片
+    try:
+        img_re = cv2.imread("sample/data1_image/"+file_name+".bmp",
+                            cv2.IMREAD_GRAYSCALE)
+        if img_re is None:
+            raise FileNotFoundError("File not found")
+
+    except FileNotFoundError:
+        print(f"File {file_name} is not found in data1_image/")
+
+        try:
+            img_re = cv2.imread("sample/"+file_name+".bmp", cv2.IMREAD_GRAYSCALE)
+            if img_re is None:
+                raise FileNotFoundError("File not found")
+        except FileNotFoundError:
+            print(f"File {file_name} is not found in sample/")
+
+    # if img_re is None:
+    #     print("Error: Image could not be loaded.")
+    #     exit()
+    
+    size_of_image = np.shape(img_re)
+    
     # 正規化圖片大小
     scale = 600/max(size_of_image[0], size_of_image[1])
     img = cv2.resize(img_re, (int(
         size_of_image[1]*scale), int(size_of_image[0]*scale)), interpolation=cv2.INTER_AREA)
 
-    # 辨識圖片的EAN-13條碼
-    ean13, is_valid, thresh = process(
+    # 初次辨識圖片的EAN-13條碼
+    ean13, is_valid, thresh = decode_process(
         img, max_value=1, sauvola_block_size=30, sauvola_R=0.2, distance_filter=0.6)
-    try_way = "First try"
+    try_way = "block_size=30"
 
+    # 多方嘗試
     if is_valid == None or is_valid == False:
-        try_way = "block_size = 90 TRY"
-        ean13, is_valid, thresh = process(
+        try_way = "block_size = 90 "
+        ean13, is_valid, thresh = decode_process(
             img, max_value=1, sauvola_block_size=90, sauvola_R=0.2, distance_filter=0.6)
 
     if is_valid == None or is_valid == False:
-        try_way == "rotate -45"
+        try_way == "rotate -45 "
         img_rotation = rotate_bound_white_bg(img, -45)
-        ean13, is_valid, thresh = process(
+        ean13, is_valid, thresh = decode_process(
             img_rotation, max_value=1, sauvola_block_size=90, sauvola_R=0.2, distance_filter=0.3)
 
     if is_valid == None or is_valid == False:
         try_way == "rotate -45 and small decode"
         img_rotation = rotate_bound_white_bg(img, -45)
-        ean13, is_valid, thresh = process(img_rotation, max_value=1, sauvola_block_size=120,
+        ean13, is_valid, thresh = decode_process(img_rotation, max_value=1, sauvola_block_size=120,
                                           sauvola_R=0.2, distance_filter=10, min_scale=20000, max_scale=70)
 
     if is_valid == None or is_valid == False:
         try_way == "rotate 45"
         img_rotation = rotate_bound_white_bg(img, 45)
-        ean13, is_valid, thresh = process(
+        ean13, is_valid, thresh = decode_process(
             img_rotation, max_value=1, sauvola_block_size=90, sauvola_R=0.2, distance_filter=0.6)
 
     if is_valid == None or is_valid == False:
         try_way = "small decode"
-        ean13, is_valid, thresh = process(
+        ean13, is_valid, thresh = decode_process(
             img, max_value=1, sauvola_block_size=100, sauvola_R=0.2, distance_filter=6, min_scale=30000, max_scale=70)
 
     # 旋轉圖形
     if is_valid == None or is_valid == False:
         try_way = "k=1 TRY"
         img_rotation = rotate_bound_white_bg(img, 90)
-        ean13, is_valid, thresh = process(
+        ean13, is_valid, thresh = decode_process(
             img_rotation, max_value=1, sauvola_block_size=60, sauvola_R=0.2, distance_filter=0.6)
 
     if is_valid == None or is_valid == False:
         try_way = "k=-1 TRY"
         img_rotation = rotate_bound_white_bg(img, -90)
-        ean13, is_valid, thresh = process(
+        ean13, is_valid, thresh = decode_process(
             img_rotation, max_value=1, sauvola_block_size=60, sauvola_R=0.2, distance_filter=0.6)
     if is_valid == None or is_valid == False:
         try_way = "k=2 TRY"
         img_rotation = rotate_bound_white_bg(img, 180)
-        ean13, is_valid, thresh = process(
+        ean13, is_valid, thresh = decode_process(
             img_rotation, max_value=1, sauvola_block_size=60, sauvola_R=0.2, distance_filter=0.6)
 
     print(
         f"--------------------End at ({try_way})-----------------------------")
 
+
+    # # show original and result image
+    # show_gray_image(img_re)
+    # show_rusult_image(thresh, ean13)
+    print(f"detected: {ean13}")
+    is_match = False
+    path = "sample/date1_txt/"+file_name+".txt"
+    try:
+        file = open(path,'r')
+        temp1 = file.read().strip()
+        print(f"txtcode:  {temp1}")
+
+        if temp1 == ean13:
+            is_match = True
+            print(f"!!!!!!!!!!!!!!!!!! {file_name} is Match !!!!!!!!!!!!!!!!!!!!!!")
+        file.close()
+    except FileNotFoundError:
+        print("txt file not exist.")
+    # f = open(path, 'w')
+
     # 計算程式運行時間
     end_time = time.time()
-
     print(f"Average Time: {end_time-start_time}s.")
-    show_gray_image(img_re)
-    show_rusult_image(thresh, ean13)
+    return is_match, is_valid, ean13
+
+
+if __name__ == '__main__':
+    # for i in range(1,3):
+    #     file_name = "image_"+str(i)
+    #     is_match, is_valid , ean13 = process(file_name)
+    
+    
+    is_match, is_valid , ean13 = process("test1")
